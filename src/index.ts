@@ -5,7 +5,7 @@ interface InitProps {
   fcmToken: string;
   deviceId: string;
   source: SourceType;
-  env: "development" | "production";
+  env?: "development" | "production";
 }
 
 // let nIntervalId: number | undefined;
