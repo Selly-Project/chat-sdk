@@ -1,31 +1,27 @@
 type SourceType = "supplier_tool" | "selly_admin";
-
+type ENV_Type = "development" | "production"
 interface InitProps {
   userToken: string;
   fcmToken: string;
   deviceId: string;
   source: SourceType;
-  env?: "development" | "production";
+  env?: ENV_Type;
 }
 
-// let nIntervalId: number | undefined;
-let APP_ENV: string;
-let AUTH_INFO = {
-  userToken: "",
-  fcmToken: "",
-  deviceId: "",
-  source: "",
-};
-
 export class ChatSDK {
-  public init(params: InitProps) {
-    const { env = "development", ...authInfo } = params || {};
-    AUTH_INFO = authInfo;
-    APP_ENV = env;
+  private env: ENV_Type;
+  private authInfo: Pick<InitProps, "userToken" | "fcmToken" | "deviceId" | "source">;
+
+  constructor(params: InitProps) {
+    const { env = 'development', ...authInfo } = params;
+    this.authInfo = authInfo
+    this.env = env;
+  }
+
+  public init() {
     this.initFontAwesome();
     this.setupStyled();
     this.setupChat();
-    // nIntervalId = setInterval(() => this.setupChat(), 1500);
   }
 
   public destroy() {
@@ -39,7 +35,7 @@ export class ChatSDK {
   }
 
   private genQueryParams(): string {
-    return new URLSearchParams(AUTH_INFO).toString();
+    return new URLSearchParams(this.authInfo).toString();
   }
 
   private getNodeById(id: string) {
@@ -127,11 +123,12 @@ export class ChatSDK {
   }
 
   private initChat() {
+    const env = this.env;
     const iframeTag = this.getNodeById("iframe-src") as HTMLIFrameElement;
 
     if (!iframeTag?.src) {
       let domain = "https://chat.unibag.xyz";
-      if (APP_ENV !== "development") {
+      if (env !== "development") {
         domain = "https://chat.selly.vn";
       }
       iframeTag.src = `${domain}/?${this.genQueryParams()}`;
@@ -139,10 +136,8 @@ export class ChatSDK {
   }
 
   private setupChat() {
-    if (AUTH_INFO.userToken) {
-      // clearInterval(nIntervalId);
-      // nIntervalId = undefined;
-
+    const { userToken } = this.authInfo
+    if (userToken) {
       this.createButtonChat();
       this.createBoxChat();
       this.handleClickButtonChat();
